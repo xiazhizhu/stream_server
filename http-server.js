@@ -85,6 +85,20 @@ class HTTPServer extends events.EventEmitter {
     }
 
     async start() {
+		//test
+		//register easydarwin to redis
+		const uuidV1 = require('uuid/v1');
+		console.log("uudi="+uuidV1()); // -> '6c84fb90-12c4-11e1-840d-7b25c5ee775a'
+		//send redis heartbeat to redis
+		var schedule = require('node-schedule');
+		var rule = new schedule.RecurrenceRule();
+		rule.second = [0,10,20,30,40,50];
+		var j = schedule.scheduleJob(rule, function(){
+	//		console.log('现在时间：',new Date());
+	//		console.log("uudi="+uuidV1()); // -> '6c84fb90-12c4-11e1-840d-7b25c5ee775a'
+		});
+		
+		//end
         this.server.listen(this.port, async () => {
             var host = await ip.v4();
             var env = process.env.NODE_ENV || "development";

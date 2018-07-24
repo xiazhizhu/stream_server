@@ -35,8 +35,10 @@ class RTSPServer extends events.EventEmitter {
 
     addSession(session) {
         if(session.type == 'pusher') {
+			console.log("addSession pusher session.path",session.path);
             this.pushSessions[session.path] = session;
         } else if(session.type == 'player') {
+			console.log("addSession player session.path",session.path);
             var playSessions = this.playSessions[session.path];
             if(!playSessions) {
                 playSessions = [];
@@ -49,7 +51,8 @@ class RTSPServer extends events.EventEmitter {
     }
 
     removeSession(session) {
-        if(session.type == 'pusher') {
+		console.log("removeSession "+session.type+ " session path:" + session.path);
+        if(session.type == 'pusher') {			
             delete this.pushSessions[session.path];
         } else if(session.type == 'player') {
             var playSessions = this.playSessions[session.path];

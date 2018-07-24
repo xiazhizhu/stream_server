@@ -258,6 +258,7 @@ class RTSPSession extends event.EventEmitter {
                     res.msg = 'Not Acceptable';
                 } else {
                     this.server.addSession(this);
+					console.log("redis host="+cfg.redis_host);
                 }
                 break;
             case 'SETUP':
