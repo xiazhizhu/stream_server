@@ -9,6 +9,7 @@ const sdpParser = require('sdp-transform');
 const getPort = require('get-port');
 const dgram = require('dgram');
 const cfg = require('cfg');
+const redis= require('redis');
 
 class RTSPRequest {
     constructor() {
@@ -76,6 +77,7 @@ class RTSPSession extends event.EventEmitter {
         this.startAt = new Date();
         //-- stats info end
 
+		
         this.sid = shortid.generate(); // session id
         this.socket = socket;
         this.host = this.socket.address().address;
@@ -258,6 +260,7 @@ class RTSPSession extends event.EventEmitter {
                     res.msg = 'Not Acceptable';
                 } else {
                     this.server.addSession(this);
+					this.server.addSessionToredis(this);
 					console.log("redis host="+cfg.redis_host);
                 }
                 break;
@@ -388,6 +391,7 @@ class RTSPSession extends event.EventEmitter {
                 process.nextTick(async () => {
                     await this.sendGOPCache();
                     this.server.addSession(this);
+					this.server.addSessionToredis(this);
                 })
                 res.headers['Range'] = req['Range'];
                 break;
@@ -404,6 +408,7 @@ class RTSPSession extends event.EventEmitter {
     stop() {
         this.bp.stop();
         this.server.removeSession(this);
+		this.server.removeSessionToredis(this);
 
         this.aRTPClientSocket && this.aRTPClientSocket.close();
         this.aRTPControlClientSocket && this.aRTPControlClientSocket.close();
