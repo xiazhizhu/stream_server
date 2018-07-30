@@ -106,10 +106,10 @@ def post_method_info():
 	#调用检测接口
 	ret = getAddress(VINCODE)
 	server.logger.debug('ret:%s', ret)
-	if ret[0]==False:
+	if ret[0]==0:
 		get_status = 1
 		video_stream=str(VINCODE)+str(TIMESTAMP)+".sdp"
-	elif ret[0]==True:
+	elif ret[0]==1:
 		get_status = 0
 		video_stream=str(ret[2])
 	return jsonify(
@@ -143,10 +143,10 @@ def post_method():
 	#调用检测接口
 	ret = getAddress(VINCODE)
 	server.logger.debug('ret:%s', ret)
-	if ret[0]==False:
+	if ret[0]==0:
 		get_status = 1
 		video_stream=str(VINCODE)+str(TIMESTAMP)+".sdp"
-	elif ret[0]==True:
+	elif ret[0]==1:
 		get_status = 0
 		video_stream=str(ret[2])
 	return jsonify(
