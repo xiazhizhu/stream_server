@@ -7,8 +7,10 @@ module.exports = {
 	redis_host: '180.76.196.70',
 	redis_port: '6379',
 	redis_passwd: '111111',
+	redis_key_prefix: 'stg02',
+	redis_key_prefix_sub: 'rtsp',
 	darwinWanip: '172.16.0.225',
-    	defaultPwd: '123456',
+	defaultPwd: '123456',
 	easyDarwinKey: '' ,  //
 	darwinHeartbeat : 7,   //the timeout of darwin ，been bigger than 5 
     rootDir: __dirname,

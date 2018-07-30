@@ -46,7 +46,7 @@ class RTSPServer extends events.EventEmitter {
 		const uuidV1 = require('uuid/v1');
 		var uuid = uuidV1();
 		console.log("uudi="+uuid); 
-		this.easyDarwinKey = "EasyDarwin:"+uuid;
+		this.easyDarwinKey = cfg.redis_key_prefix+'_'+cfg.redis_key_prefix_sub+'_'+"EasyDarwin:"+uuid;
 		cfg.easyDarwinKey = this.easyDarwinKey ;
 		//send redis heartbeat to redis
 		var schedule = require('node-schedule');
@@ -101,14 +101,14 @@ class RTSPServer extends events.EventEmitter {
 	addSessionToredis(session){
 		var path=session.path.substring(1);
 	//	console.log("111111addSessionToredis  path:",path);
-		var sessionKey= "Live:"+path+"/1";
+		var sessionKey= cfg.redis_key_prefix+'_'+cfg.redis_key_prefix_sub+'_'+"Live:"+path;
 		if(session.type == 'pusher') {
 			console.log("111111addSessionToredis pusher sessionKey:",sessionKey);            
 			var sessionInfo={};
 			sessionInfo.Bitrate= 0;
 			sessionInfo.Output = 0;
-			var headDarwin="EasyDarwin:";
-			sessionInfo.EasyDarwin = cfg.easyDarwinKey.substring(headDarwin.length);
+//			var headDarwin="EasyDarwin:";
+			sessionInfo.EasyDarwin = cfg.easyDarwinKey;
 			this.client.hmset(sessionKey,sessionInfo,replyFunc);
         } else if(session.type == 'player') {
 			console.log("111111addSessionToredis player sessionKey:",sessionKey);
@@ -118,9 +118,9 @@ class RTSPServer extends events.EventEmitter {
 	
 	removeSessionToredis(session){
 		var path=session.path.substring(1);
-		var sessionKey= "Live:"+path+"/1";
+		var sessionKey= cfg.redis_key_prefix+'_'+cfg.redis_key_prefix_sub+'_'+"Live:"+path;
 		if(session.type == 'pusher') {
-			console.log("111111removeSessionToredis pusher session.path",session.path);            
+			console.log("111111removeSessionToredis pusher sessionKey",sessionKey);            
 			var sessionInfo={};
 			sessionInfo.Bitrate= 0;
 			sessionInfo.Output = 0;
