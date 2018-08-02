@@ -11,6 +11,7 @@ class BufferPool extends Readable {
   }
 
   init() {
+	console.log("buffer-pool init");
     this.readBytes = 0;
     this.poolBytes = 0;
     this.needBytes = 0;
@@ -18,6 +19,7 @@ class BufferPool extends Readable {
   }
 
   stop() {
+	console.log("buffer-pool stop");
     try {
       this.gFun.next(true);
     } catch (e) {
@@ -26,6 +28,7 @@ class BufferPool extends Readable {
   }
 
   push(buf) {
+	console.log("buffer-pool push");
     super.push(buf);
     this.poolBytes += buf.length;
     this.readBytes += buf.length;
@@ -35,11 +38,13 @@ class BufferPool extends Readable {
   }
 
   read(size) {
+	console.log("buffer-pool read "+size);
     this.poolBytes -= size;
     return super.read(size);
   }
 
   need(size) {
+	console.log("buffer-pool need" + size);
     let ret = this.poolBytes < size;
     if (ret) {
       this.needBytes = size;

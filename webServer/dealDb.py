@@ -1,14 +1,22 @@
 #!/usr/bin/env python
 #!/-*-coding:utf-8-*-
 import redis
-redis_host = '127.0.0.1'
-redis_port = 6379
-redis_password= '111111'
+#redis_host = '127.0.0.1'
+#redis_port = 6379
+#redis_password= '111111'
 redisKeyPrefix= 'stg02'
 redisKeyPrefixSub= 'rtsp'
 
+from rediscluster import StrictRedisCluster
+import sys
 
-r = redis.Redis(host=redis_host, port=redis_port,password=redis_password)
+redis_nodes =  [{"host":"concar-redis01","port":"6379"},
+                    {"host":"concar-redis02","port":"6379"},
+                    {"host":"concar-redis03","port":"6379"}
+                   ]
+
+#r = redis.Redis(host=redis_host, port=redis_port,password=redis_password)
+r = StrictRedisCluster(startup_nodes=redis_nodes)
 print "redis r=",r
 
 def list_iter(servername):

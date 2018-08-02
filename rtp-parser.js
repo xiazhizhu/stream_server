@@ -5,6 +5,9 @@ class EasyRtpParser {
     }
 
     static parseRtpPacket(buf) {
+		
+		
+		console.log("rtp-parse parseRtpPacket");
         if(buf.length < EasyRtpParser.FIXED_HEADER_LENGTH) {
             throw new Error('can not parse buffer smaller than fixed header');
         }
@@ -65,6 +68,7 @@ class EasyRtpParser {
     }
 
     static parseRtpPayloadType(payloadType) {
+		console.log("rtp-parse parseRtpPayloadType");
         if (payloadType < 0 || payloadType > 127) {
             throw new Error('payload type range error');
         }
@@ -73,6 +77,7 @@ class EasyRtpParser {
     }
 
     static isKeyframeStart(rtpRawdata) {
+		console.log("rtp-parse isKeyframeStart");
         // fu-a
         if(rtpRawdata.length >= 2 && rtpRawdata.readUInt8(0) == 0x7c && (rtpRawdata.readUInt8(1) == 0x87 || rtpRawdata.readUInt8(1) == 0x85)) { // fu-a
             return true;

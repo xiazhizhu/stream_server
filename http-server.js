@@ -86,6 +86,7 @@ class HTTPServer extends events.EventEmitter {
 
     async start() {
 		
+		console.log("http-server start");
         this.server.listen(this.port, async () => {
             var host = await ip.v4();
             var env = process.env.NODE_ENV || "development";

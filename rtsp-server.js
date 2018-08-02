@@ -4,13 +4,33 @@ const RTSPSession = require('rtsp-session');
 const events = require('events');
 const redis= require('redis');
 const cfg= require('cfg');
-
+const RedisC = require('ioredis');
+const client = require('./redis_client');
 class RTSPServer extends events.EventEmitter {
     
     constructor(port = 554) {
+		console.log("rtsp-server constructor");
         super();
 		
 		//-- redis info 
+		/*
+		this.client = new RedisC.Cluster([
+		{
+			port:cfg.redis_port,
+			host:cfg.redis_host1
+		},
+		{
+			port:cfg.redis_port,
+			host:cfg.redis_host2
+		},
+		{
+			port:cfg.redis_port,
+			host:cfg.redis_host3
+		}
+		]);
+	
+*/
+		 /*
 		this.client = redis.createClient(cfg.redis_port,cfg.redis_host);		
 		this.client.auth(cfg.redis_passwd, function(error, reply){
 		if(error){
@@ -19,7 +39,8 @@ class RTSPServer extends events.EventEmitter {
 		else{
 			console.log("redis auth succ ");
 		}
-		});				
+		});		
+       */		
 		//-- redis end		
 		
 		this.easyDarwinKey = "";
@@ -43,6 +64,7 @@ class RTSPServer extends events.EventEmitter {
     start() {
 				
 		//=====register easydarwin to redis
+		console.log("rtsp-server start");
 		const uuidV1 = require('uuid/v1');
 		var uuid = uuidV1();
 		console.log("uudi="+uuid); 
@@ -67,6 +89,7 @@ class RTSPServer extends events.EventEmitter {
     }
 
     addSession(session) {
+		console.log("rtsp-server addSession");
         if(session.type == 'pusher') {
 			console.log("111111addSession pusher session.path",session.path);
             this.pushSessions[session.path] = session;
@@ -84,6 +107,7 @@ class RTSPServer extends events.EventEmitter {
     }
 
     removeSession(session) {
+		console.log("rtsp-server removersession");
 		console.log("111111removeSession "+session.type+ " session path:" + session.path);
         if(session.type == 'pusher') {			
             delete this.pushSessions[session.path];
@@ -99,6 +123,7 @@ class RTSPServer extends events.EventEmitter {
     }
 	
 	addSessionToredis(session){
+		console.log("rtsp-server addSessionToredis");
 		var path=session.path.substring(1);
 	//	console.log("111111addSessionToredis  path:",path);
 		var sessionKey= cfg.redis_key_prefix+'_'+cfg.redis_key_prefix_sub+'_'+"Live:"+path;
@@ -109,14 +134,15 @@ class RTSPServer extends events.EventEmitter {
 			sessionInfo.Output = 0;
 //			var headDarwin="EasyDarwin:";
 			sessionInfo.EasyDarwin = cfg.easyDarwinKey;
-			this.client.hmset(sessionKey,sessionInfo,replyFunc);
+			client.hmset(sessionKey,sessionInfo,replyFunc);
         } else if(session.type == 'player') {
 			console.log("111111addSessionToredis player sessionKey:",sessionKey);
-            this.client.hincrby(sessionKey,'Output',1);
+            client.hincrby(sessionKey,'Output',1);
         }	
 	}
 	
 	removeSessionToredis(session){
+		console.log("rtsp-server removeSessionToredis");
 		var path=session.path.substring(1);
 		var sessionKey= cfg.redis_key_prefix+'_'+cfg.redis_key_prefix_sub+'_'+"Live:"+path;
 		if(session.type == 'pusher') {
@@ -125,30 +151,40 @@ class RTSPServer extends events.EventEmitter {
 			sessionInfo.Bitrate= 0;
 			sessionInfo.Output = 0;
 			sessionInfo.EasyDarwin = cfg.easyDarwinKey;
-			this.client.del(sessionKey);
+			client.del(sessionKey);
         } else if(session.type == 'player') {
-			console.log("111111removeSessionToredis player session.path",session.path);
-            this.client.hincrby(sessionKey,'Output',-1);
+			console.log("111111removeSessionToredis player sessionKey",sessionKey);
+			client.hexists(sessionKey,"Output",function(err,val){
+			if(val){
+				client.hincrby(sessionKey,'Output',-1);
+			}
+			else{				
+				console.log("the sessionKey is deleted")
+			}
+					
+			});
+            
         }	
 	}
 	
 	
 	registerDarwininfoRedis(darwinKey){
 		
-		console.log("registerDarwininfoRedis");
+		console.log("rtsp-server registerDarwininfoRedis");
 		var darwinInfo = {};
 		darwinInfo.IP = cfg.darwinWanip;
 		darwinInfo.HTTP = cfg.http_port ;
 		darwinInfo.RTSP = cfg.rtsp_tcp_port;
 		darwinInfo.Load = 0 ;
-		this.client.hmset(darwinKey, darwinInfo, replyFunc);
-		this.client.expire(darwinKey, cfg.darwinHeartbeat);		
+		client.hmset(darwinKey, darwinInfo, replyFunc);
+		client.expire(darwinKey, cfg.darwinHeartbeat);		
 		
 	}
 	
 	
 }
 function replyFunc(error,reply){
+	console.log("rtsp-server replyFunc");
 	if(error){
 		console.log(error);
 	}
@@ -158,8 +194,24 @@ function replyFunc(error,reply){
 }
 
 function updateDarwinTimeout(){
-	var client = redis.createClient(cfg.redis_port,cfg.redis_host);
-		
+	console.log("rtsp-server updateDarwinTimeout");
+//	var client = redis.createClient(cfg.redis_port,cfg.redis_host);
+/*
+	var client = new RedisC.Cluster([
+	{
+		port:cfg.redis_port,
+		host:cfg.redis_host1
+	},
+	{
+		port:cfg.redis_port,
+		host:cfg.redis_host2
+	},
+	{
+		port:cfg.redis_port,
+		host:cfg.redis_host3
+	}
+	]);	
+	
 	client.auth(cfg.redis_passwd, function(error, reply){
 	if(error){
 		console.log("updateDarwinTimeout redis auth error "+error);
@@ -168,8 +220,16 @@ function updateDarwinTimeout(){
 	//	console.log("updateDarwinTimeout redis auth succ ");
 	}
 	});
-	client.expire(cfg.easyDarwinKey,cfg.darwinHeartbeat);
-	client.quit();
+	*/
+	client.expire(cfg.easyDarwinKey,cfg.darwinHeartbeat,function(error,reply){
+	if(error){
+		console.log("updateDarwinTimeout redis expire error "+error);
+	}
+	else{
+	//	console.log("updateDarwinTimeout redis auth succ ");
+	}
+	});
+//	client.quit();
   //  console.log("updateDarwinTimeout end key:"+cfg.easyDarwinKey);	
 }
 
