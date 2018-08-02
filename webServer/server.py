@@ -14,7 +14,7 @@ monkey.patch_all()
 #设定服务器ip
 HOST="0.0.0.0"
 #设定访问端口
-PORT="8080"
+PORT="9999"
 #设置调试模式(on/off)
 DEBUG=True
 #TU唯一识别码
@@ -52,38 +52,24 @@ def get_method_info():
 	server.logger.debug('request.host:%s', request.host)
 	server.logger.debug('request.url:%s', request.url)
 	#调用获取超时接口
-	result = gettimeoutstreamlist()
-	server.logger.debug('result:%s', result)
-	list_num = len(result)
-	if list_num == 0:
-		result_list=[]
+	try:
+		result = gettimeoutstreamlist()
+	except:
+		server.logger.debug('gettimeoutstreamlist callback error')
+		return jsonify(
+		error='gettimeoutstreamlist callback error')
 	else:
-		result_list = list_2_dict_package(result)
-	return jsonify(
-	status=0,
-	number=list_num,
-	list=result_list
-	)
-
-#路由URL错误!!!
-@server.route('/vi/darwin/gettimeoutstreamlist/', methods=['GET'])
-def get_method():
-	server.logger.debug('request.host:%s', request.host)
-	server.logger.debug('request.url:%s', request.url)
-	#调用获取超时接口
-	result = gettimeoutstreamlist()
-	server.logger.debug('result:%s', result)
-	list_num = len(result)
-	if list_num == 0:
-		result_list=[]
-	else:
-		result_list = list_2_dict_package(result)
-	return jsonify(
-	status=0,
-	number=list_num,
-	list=result_list,
-	tips="请访问正确的URL:http://one.yuntouch.cn:8080/v1/darwin/gettimeoutstreamlist/"
-	)
+		server.logger.debug('result:%s', result)
+		list_num = len(result)
+		if list_num == 0:
+			result_list=[]
+		else:
+			result_list = list_2_dict_package(result)
+		return jsonify(
+		status=0,
+		number=list_num,
+		list=result_list
+		)
 
 @server.route('/v1/darwin/getaddress/', methods=['POST'])
 def post_method_info():
@@ -104,60 +90,28 @@ def post_method_info():
 	server.logger.debug('TIMESTAMP:%s', TIMESTAMP)
 	
 	#调用检测接口
-	ret = getAddress(VINCODE)
-	server.logger.debug('ret:%s', ret)
-	if ret[0]==0:
-		get_status = 1
-		video_stream=str(VINCODE)+str(TIMESTAMP)+".sdp"
-	elif ret[0]==1:
-		get_status = 0
-		video_stream=str(ret[2])
-	return jsonify(
-	status=get_status,
-	exist=ret[0],
-	liveType=0,
-	host=str(ret[1]),
-	port=554,
-	stream=video_stream
-	)
-
-#路由URL错误!!!	
-@server.route('/vi/darwin/getaddress', methods=['POST'])
-def post_method():
-	server.logger.debug('request.headers:%s', request.headers)
-	server.logger.debug('request.host:%s', request.host)
-	server.logger.debug('request.url:%s', request.url)
-	#获取原始post数据
-	data = request.get_data()
-	server.logger.debug('request.data:%s', data)
-	#转成Python数据结构
-	data_str = json.loads(data)
-	server.logger.debug('request.data[vinCode]:%s', data_str['vinCode'])
-	VINCODE = data_str['vinCode']
-	server.logger.debug('VINCODE:%s', VINCODE)
-	server.logger.debug('request.data[liveType]:%s', data_str['liveType'])
-	
-	TIMESTAMP=int(time.time())
-	server.logger.debug('TIMESTAMP:%s', TIMESTAMP)
-	
-	#调用检测接口
-	ret = getAddress(VINCODE)
-	server.logger.debug('ret:%s', ret)
-	if ret[0]==0:
-		get_status = 1
-		video_stream=str(VINCODE)+str(TIMESTAMP)+".sdp"
-	elif ret[0]==1:
-		get_status = 0
-		video_stream=str(ret[2])
-	return jsonify(
-	status=get_status,
-	exist=ret[0],
-	liveType=0,
-	host=str(ret[1]),
-	port=554,
-	stream=video_stream,
-	tips="请访问正确的URL:http://one.yuntouch.cn:8080/v1/darwin/getaddress/"
-	)
+	try:
+		ret = getAddress(VINCODE)
+	except:
+		server.logger.debug('getAddress callback error')
+		return jsonify(
+		error='getAddress callback error')
+	else:
+		server.logger.debug('ret:%s', ret)
+		if ret[0]==0:
+			get_status = 1
+			video_stream=str(VINCODE)+str(TIMESTAMP)+".sdp"
+		elif ret[0]==1:
+			get_status = 0
+			video_stream=str(ret[2])
+		return jsonify(
+		status=get_status,
+		exist=ret[0],
+		liveType=0,
+		host=str(ret[1]),
+		port=554,
+		stream=video_stream
+		)
 
 if __name__ == '__main__':
 	server.debug=DEBUG	#debug模式开启才能写日志
