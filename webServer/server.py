@@ -16,7 +16,7 @@ HOST="0.0.0.0"
 #设定访问端口
 PORT="9999"
 #设置调试模式(on/off)
-DEBUG=True
+DEBUG=False
 #TU唯一识别码
 VINCODE="123456789"
 #时间戳
@@ -99,11 +99,13 @@ def post_method_info():
 	else:
 		server.logger.debug('ret:%s', ret)
 		if ret[0]==0:
-			get_status = 1
 			video_stream=str(VINCODE)+str(TIMESTAMP)+".sdp"
 		elif ret[0]==1:
-			get_status = 0
 			video_stream=str(ret[2])
+		if len(str(ret[1])) == 0:
+			get_status = 1
+		else:
+			get_status = 0
 		return jsonify(
 		status=get_status,
 		exist=ret[0],
@@ -114,7 +116,8 @@ def post_method_info():
 		)
 
 if __name__ == '__main__':
-	server.debug=DEBUG	#debug模式开启才能写日志
+	#server.debug=DEBUG	#debug模式开启才能写日志
+	logging.basicConfig(level=logging.DEBUG)
 	handler = logging.FileHandler('server.log', encoding='UTF-8')
 	handler.setLevel(logging.DEBUG)
 	logging_format = logging.Formatter('%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')
