@@ -7,7 +7,7 @@ from gevent import monkey
 import logging
 import json
 import time
-from dealDb import getAddress, gettimeoutstreamlist
+from dealDb import getAddress, gettimeoutstreamlist, setAllowStreamlist
 
 #防止并发访问阻塞
 monkey.patch_all()
@@ -94,8 +94,8 @@ def post_method_info():
 		ret = getAddress(VINCODE)
 	except:
 		server.logger.debug('getAddress callback error')
-		return jsonify(
-		error='getAddress callback error')
+		# return jsonify(
+		# error='getAddress callback error')
 	else:
 		server.logger.debug('ret:%s', ret)
 		if ret[0]==0:
@@ -106,6 +106,10 @@ def post_method_info():
 			get_status = 1
 		else:
 			get_status = 0
+			try:
+				setAllowStreamlist(video_stream)
+			except:
+				server.logger.debug('setAllowStreamlist callback error')
 		return jsonify(
 		status=get_status,
 		exist=ret[0],
