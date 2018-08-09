@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 #!/-*-coding:utf-8-*-
 import redis
-#redis_host = '127.0.0.1'
-#redis_port = 6379
-#redis_password= '111111'
-redisKeyPrefix= 'stg02'
-redisKeyPrefixSub= 'rtsp'
+
+redisKeyPrefix= 'stg02'   #redis前缀1
+redisKeyPrefixSub= 'rtsp'   #redis前缀2
+tempKeyTtl=120  # 推流路径有效时间 单位秒
 
 from rediscluster import StrictRedisCluster
 import sys
@@ -53,6 +52,8 @@ def getAddress(vinCode,isExist=0):
 	print "before sort=",f
 	afterSF=sorted(f)
 	print "after sort=",afterSF
+	if len(afterSF)==0:
+		return isExist,"",""
 	return isExist,afterSF[0][1],""
 
 #获取没有pull的流媒体链接 gettimeoutstreamlist 输入 无  输出["vincode1" "vincode2" ...]
@@ -65,17 +66,47 @@ def gettimeoutstreamlist():
 		print "have none stream"
 		return allStream
 	for stream in allStream:
-		out=r.hmget(stream,"Output")
+		out=r.hmget(stream,"Output","EasyDarwin")
 		print "out=",out[0]
 		if int(out[0]) == 0:
 			print "out is 0"
-			result.append(stream[len_prefix:len_prefix+17])
+			resultinfo={}
+			listDarwin=r.keys(out[1]);
+			print "listDarwin",listDarwin
+			darwinIp=r.hmget(listDarwin[0],"IP","RTSP")
+			if len(darwinIp)==0:
+				resultinfo["host"]="";
+				resultinfo["port"]='554'
+			else:
+				resultinfo["host"]=darwinIp[0]
+			    	resultinfo["port"]=darwinIp[1]
+			resultinfo["vinCode"]=stream[len_prefix:len_prefix+17]
+			resultinfo["liveType"]=0			
+			resultinfo["stream"]=stream[len_prefix:]
+			#result.append(stream[len_prefix:len_prefix+17])
+			print "resultinfo="+str(resultinfo)
+			result.append(resultinfo)
 		
-	return result			
+	return result	
+
+#set有效流列表
+def setAllowStreamlist(stream):
+	streamKey=redisKeyPrefix+"_"+redisKeyPrefixSub+"_"+"Temp:"+stream;
+	r.set(streamKey,"OK",ex=tempKeyTtl);
+	return ;
+	
 print "start test getAddress!"
 isExist=0
 result=getAddress("0000",isExist)
 print "address=",result[1],"isExist =",result[0],"stream=",result[2]
 
 print "start gettimeoutstreamlist--------------------------"
-print "LIST IS",gettimeoutstreamlist()
+list=gettimeoutstreamlist()
+i=0
+while i < len(list):
+	print "LIST IS "+str(list[i])
+	i=i+1
+
+
+print "start test setAllowStreamlist ----------------------"
+setAllowStreamlist("111111111");

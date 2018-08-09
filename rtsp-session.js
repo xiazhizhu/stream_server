@@ -141,6 +141,7 @@ class RTSPSession extends event.EventEmitter {
                 }
                 this.inBytes += (rtpLen + 4);
             } else { // rtsp method
+			    console.log("5555555 "+buf.readUInt8())
                 var reqBuf = Buffer.concat([buf], 1);
                 while (reqBuf.toString().indexOf("\r\n\r\n") < 0) {
 					console.log("444444");
@@ -269,9 +270,17 @@ class RTSPSession extends event.EventEmitter {
                     res.code = 406;
                     res.msg = 'Not Acceptable';
                 } else {
-                    this.server.addSession(this);
-					this.server.addSessionToredis(this);
-					console.log("redis host="+cfg.redis_host);
+					console.log("handleRequest pushSession path="+this.path);
+					if (this.server.isLegalPathFromRedis(this.path)==0){
+						res.code = 405;
+						res.msg = 'Path Illegal';
+						console.log("code="+res.code+";res.msg"+res.msg);
+					}else{
+						this.server.addSession(this);
+						this.server.addSessionToredis(this);
+						
+					}
+                    
                 }
                 break;
             case 'SETUP':

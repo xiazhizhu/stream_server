@@ -6,6 +6,8 @@ const redis= require('redis');
 const cfg= require('cfg');
 const RedisC = require('ioredis');
 const client = require('./redis_client');
+const file = require("./fileModule");
+
 class RTSPServer extends events.EventEmitter {
     
     constructor(port = 554) {
@@ -80,6 +82,9 @@ class RTSPServer extends events.EventEmitter {
 		});		
 		//=====end
 		
+		//del unuse data from redis
+		this.delUnuseDataRedis();
+		//end
         this.server.listen(this.port);
         this.stats();
     }
@@ -135,6 +140,8 @@ class RTSPServer extends events.EventEmitter {
 //			var headDarwin="EasyDarwin:";
 			sessionInfo.EasyDarwin = cfg.easyDarwinKey;
 			client.hmset(sessionKey,sessionInfo,replyFunc);
+			//add a data to local file
+			file.writeLine(sessionKey);
         } else if(session.type == 'player') {
 			console.log("111111addSessionToredis player sessionKey:",sessionKey);
             client.hincrby(sessionKey,'Output',1);
@@ -146,14 +153,14 @@ class RTSPServer extends events.EventEmitter {
 		var path=session.path.substring(1);
 		var sessionKey= cfg.redis_key_prefix+'_'+cfg.redis_key_prefix_sub+'_'+"Live:"+path;
 		if(session.type == 'pusher') {
-			console.log("111111removeSessionToredis pusher sessionKey",sessionKey);            
+			console.log("removeSessionToredis pusher sessionKey",sessionKey);            
 			var sessionInfo={};
 			sessionInfo.Bitrate= 0;
 			sessionInfo.Output = 0;
 			sessionInfo.EasyDarwin = cfg.easyDarwinKey;
 			client.del(sessionKey);
         } else if(session.type == 'player') {
-			console.log("111111removeSessionToredis player sessionKey",sessionKey);
+			console.log("removeSessionToredis player sessionKey",sessionKey);
 			client.hexists(sessionKey,"Output",function(err,val){
 			if(val){
 				client.hincrby(sessionKey,'Output',-1);
@@ -181,6 +188,32 @@ class RTSPServer extends events.EventEmitter {
 		
 	}
 	
+	isLegalPathFromRedis(path){
+		return 1 ;
+		console.log("rtsp-server isLegalPathFromRedis");
+		if (path.length == 0){
+			return 0;
+		}
+		var streamKey = cfg.redis_key_prefix+'_'+cfg.redis_key_prefix_sub+'_'+"Temp:"+path.substring(1);
+		console.log("isLegalPathFromRedis streamKey="+streamKey);
+		var value = client.get(streamKey);
+		console.log("isLegalPathFromRedis value"+value)
+			
+	}
+	
+	delUnuseDataRedis(){
+		console.log("delUnuseDataRedis start");
+		file.readLine(function(err,val){
+			if(err){
+				
+			}
+			else{
+				console.log("delUnuseDataRedis del from redis key="+val);
+				client.del(val);
+			}			
+		});
+	}
+	
 	
 }
 function replyFunc(error,reply){
@@ -195,32 +228,15 @@ function replyFunc(error,reply){
 
 function updateDarwinTimeout(){
 	console.log("rtsp-server updateDarwinTimeout");
-//	var client = redis.createClient(cfg.redis_port,cfg.redis_host);
-/*
-	var client = new RedisC.Cluster([
-	{
-		port:cfg.redis_port,
-		host:cfg.redis_host1
-	},
-	{
-		port:cfg.redis_port,
-		host:cfg.redis_host2
-	},
-	{
-		port:cfg.redis_port,
-		host:cfg.redis_host3
-	}
-	]);	
 	
-	client.auth(cfg.redis_passwd, function(error, reply){
-	if(error){
-		console.log("updateDarwinTimeout redis auth error "+error);
-	}
-	else{
-	//	console.log("updateDarwinTimeout redis auth succ ");
-	}
-	});
-	*/
+	var darwinInfo = {};
+	darwinInfo.IP = cfg.darwinWanip;
+	darwinInfo.HTTP = cfg.http_port ;
+	darwinInfo.RTSP = cfg.rtsp_tcp_port;
+	darwinInfo.Load = 0 ;
+	client.hmset(cfg.easyDarwinKey, darwinInfo, replyFunc);
+	client.expire(cfg.easyDarwinKey, cfg.darwinHeartbeat);	
+/*
 	client.expire(cfg.easyDarwinKey,cfg.darwinHeartbeat,function(error,reply){
 	if(error){
 		console.log("updateDarwinTimeout redis expire error "+error);
@@ -229,8 +245,20 @@ function updateDarwinTimeout(){
 	//	console.log("updateDarwinTimeout redis auth succ ");
 	}
 	});
-//	client.quit();
-  //  console.log("updateDarwinTimeout end key:"+cfg.easyDarwinKey);	
+	*/
+	/*
+	var keyIndex= cfg.redis_key_prefix+'_'+cfg.redis_key_prefix_sub+'_'+"Temp:*"
+	client.keys(keyIndex,function(error,reply){
+		if(error)
+		{
+			console.log("updateDarwinTimeout get key error "+error);
+		}
+		else{
+			console.log("updateDarwinTimeout get key succ "+reply);
+		}
+	})
+	*/
+	
 }
 
 module.exports = RTSPServer;
