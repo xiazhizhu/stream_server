@@ -9,7 +9,7 @@ URL = "http://tomcat-microservices.stg02.internal.caritc.de:8080/nev-biz-proxy/s
 ##定时时长(单位:秒)
 TIMESTEP=120
 ##日志文件
-logging.basicConfig(level=logging.DEBUG, filename='webServer_timeout.log', filemode='w', format='%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')  
+logging.basicConfig(level=logging.DEBUG, filename='webServer.log', filemode='w', format='%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')  
 
 
 def post_method_2_tps(text):
