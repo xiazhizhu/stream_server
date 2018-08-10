@@ -17,29 +17,25 @@ def post_method_2_tps(text):
 	else:
 		text = json.dumps(text)
 		#print text
+		print "post_method_2_tps: %s", text
 		header_dict = {"User-Agent":"Apache-HttpClient/4.1.1 (java 1.5)","Content-Type":"application/json","Accept-Encoding": "gzip,deflate"}
 		req = urllib2.Request(url=URL,data=text,headers=header_dict)
 		result = urllib2.urlopen(req)
 		result = result.read()
-		print result
-
-
-#从超时接口获取的list数据,进行封装处理
-# def list_2_dict_package(result):
-	# print "***list_2_dict_package***"
-	# new_list = []
-	# if len(result) != 0:
-		# for index in range(len(result)):
-			# new_dict = {}
-			# new_dict["vinCode"] = result[index]
-			# new_list.append(new_dict)
-	# return new_list
-
+		print "post_method_2_tps: %s", result
 
 def get_timeout_list():
+	# logger.debug("get_timeout_list")
+	# logging.basicConfig(level=logging.DEBUG)
+	# handler = logging.FileHandler('server_timeout.log', encoding='UTF-8')
+	# handler.setLevel(logging.DEBUG)
+	# logging_format = logging.Formatter('%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')
+	# handler.setFormatter(logging_format)
+	# logger.addHandler(handler)
 	#调用获取超时接口
 	result = gettimeoutstreamlist()
 	list_num = len(result)
+	print "get_timeout_list: %s", list_num
 	if list_num == 0:
 		result_list=[]
 	else:
@@ -48,10 +44,5 @@ def get_timeout_list():
 	post_method_2_tps(result_list)
 	#//处理TSP相关部分
 	#//将结果发送给TSP
-	t = threading.Timer(TIMESTEP, get_timeout_list)
-	t.start()
+	t = threading.Timer(TIMESTEP, get_timeout_list).start()
 
-	
-	
-if __name__=="__main__":
-	get_timeout_list()
