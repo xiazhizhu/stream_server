@@ -13,7 +13,7 @@ monkey.patch_all()
 #设定服务器ip
 HOST="0.0.0.0"
 #设定访问端口
-PORT="9999"
+PORT=9999
 #设置调试模式(on/off)
 # DEBUG=False
 #TU唯一识别码
@@ -73,7 +73,7 @@ def post_method_info():
 
 def web_server():
 	logging.basicConfig(level=logging.DEBUG)
-	handler = logging.FileHandler('webServer.log', encoding='UTF-8')
+	handler = logging.FileHandler('/var/log/webServer.log', encoding='UTF-8')
 	handler.setLevel(logging.DEBUG)
 	logging_format = logging.Formatter('%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')
 	handler.setFormatter(logging_format)
@@ -82,6 +82,10 @@ def web_server():
 	
 	
 if __name__ == '__main__':
-	threading.Thread(target=web_server).start()
-	threading.Thread(target=get_timeout_list).start()
+	th_server=threading.Thread(target=web_server)
+	th_timer=threading.Thread(target=get_timeout_list)
+	th_server.start()
+	th_timer.start()
+	th_server.join()
+	th_timer.join()
 

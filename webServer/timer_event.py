@@ -9,7 +9,7 @@ URL = "http://tomcat-microservices.stg02.internal.caritc.de:8080/nev-biz-proxy/s
 ##定时时长(单位:秒)
 TIMESTEP=120
 ##日志文件
-logging.basicConfig(level=logging.DEBUG, filename='webServer.log', filemode='w', format='%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')  
+logging.basicConfig(level=logging.DEBUG, filename='/var/log/webServer.log', filemode='w', format='%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')  
 
 
 def post_method_2_tps(text):
@@ -36,7 +36,7 @@ def get_timeout_list():
 		result_list=[]
 	else:
 		result_list=result
-	logging.debug(result_list)
+	logging.debug("%s", result_list)
 	#调用TSP callback接口
 	try:
 		post_method_2_tps(result_list)
