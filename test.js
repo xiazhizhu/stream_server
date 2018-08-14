@@ -1,129 +1,36 @@
-const cache = require('./cache');
-//*****************set 方法***********************
-// cache.set("cacheTest","cacheTestOK",function(err, res){
-	// if(err){
-		// console.log("set value error");
-	// }
-	// else{
-		// console.log("set succeed");
-	// }
-// });
-//get 方法
-// cache.get("cacheTest",function(err, val){
-	// if(err){
-		// console.log("get value error");
-	// }
-	// else
-	// {
-		// console.log(val);
-	// }
-// });
+const RedisC = require('ioredis');
+const redis = require("redis");
+var async = require('async');
 
-//*****************hmset 方法**********************
-var testData  = {};
-testData.Bitrate   = 0;
-testData.Output = 0;
-testData.EasyDarwin = "test";
-	
-cache.hmset("test", testData, function(err,res){
-	if(err){
-		console.log("hmset value error");
-	}
-	else{
-		console.log("hmset succeed");
-	}
+client = redis.createClient(6379,"127.0.0.1");
+	// this.client = redis.createClient("6379","127.0.0.1");
+client.on("error",function(err){
+	console.log("redisCache Error " + err);
+});
+client.on("ready", function(){
+	console.log("redisCache connection succeed");
 });
 
-//*****************hgetall 方法********************
-cache.hgetall("test",function(err, val){
-	if(err){
-		console.log("hgetall value error");
-	}
-	else
-	{
-		console.log(val);
-	}
-});
-//*****************hincrby 方法********************
-cache.hincrby("test","Output",1,function(err, val){
-	if(err){
-		console.log("hincrby value error");
-	}
-	else
-	{
-		console.log(val);
-	}
-});
-cache.hgetall("test",function(err, val){
-	if(err){
-		console.log("hgetall value error");
-	}
-	else
-	{
-		console.log(val);
-	}
-});
+var str = "";
 
-//*****************del 方法********************
-// cache.del("test",function(err, val){
-	// if(err){
-		// console.log("del value error");
-	// }
-	// else
-	// {
-		// console.log(val);
-	// }
-// });
+var get_result = function(key,callback) {
+    
+	console.log("key="+key);
+        client.get(key, function (err, res) {
+            if (!err) {
+                callback(JSON.stringify(res));
+//                console.log(str);//@1 这里输出的是有值的str
+            }else {
+                console.log(err);
+            }
+        });
+    
+}
 
-// cache.hgetall("test",function(err, val){
-	// if(err){
-		// console.log("hgetall value error");
-	// }
-	// else
-	// {
-		// console.log(val);
-	// }
-// });
+key="stg_aaa_333333"
+get_result(key,function(data){
+	console.log("test start")
+        console.log(data)
+	console.log("test end")
+})
 
-//*****************expire 方法********************
-cache.expire("test", 30,function(err, val){
-	if(err){
-		console.log("expire value error");
-	}
-	else
-	{
-		console.log(val);
-	}
-});
-
-//*****************ttl 方法********************
-cache.ttl("test", function(err, val){
-	if(err){
-		console.log("expire value error");
-	}
-	else
-	{
-		console.log(val);
-	}
-});
-cache.expire("test", 500,function(err, val){
-	if(err){
-		console.log("expire value error");
-	}
-	else
-	{
-		console.log(val);
-	}
-});
-
-cache.ttl("test",function(err, val){
-	if(err){
-		console.log("expire value error");
-	}
-	else
-	{
-		console.log(val);
-	}
-});
-//*****************quit 方法********************
-cache.quit();

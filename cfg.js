@@ -17,5 +17,6 @@ module.exports = {
 	darwinHeartbeat : 12,   //the timeout of darwin ，been bigger than 10 
     rootDir: __dirname,
     wwwDir: path.resolve(__dirname, "www"),
-    dataDir: path.resolve(os.homedir(), ".easydarwin")
+ //   dataDir: path.resolve(os.homedir(), ".easydarwin")
+    dataDir: path.resolve("/var/log/", "darwin")
 }

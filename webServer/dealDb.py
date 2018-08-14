@@ -94,19 +94,22 @@ def setAllowStreamlist(stream):
 	streamKey=redisKeyPrefix+"_"+redisKeyPrefixSub+"_"+"Temp:"+stream;
 	r.set(streamKey,"OK",ex=tempKeyTtl);
 	return ;
+
+
 	
-print "start test getAddress!"
-isExist=0
-result=getAddress("0000",isExist)
-print "address=",result[1],"isExist =",result[0],"stream=",result[2]
+if(__name__=="__main__"):
+	print "start test getAddress!"
+	isExist=0
+	result=getAddress("0000",isExist)
+	print "address=",result[1],"isExist =",result[0],"stream=",result[2]
 
-print "start gettimeoutstreamlist--------------------------"
-list=gettimeoutstreamlist()
-i=0
-while i < len(list):
-	print "LIST IS "+str(list[i])
-	i=i+1
+	print "start gettimeoutstreamlist--------------------------"
+	list=gettimeoutstreamlist()
+	i=0
+	while i < len(list):
+		print "LIST IS "+str(list[i])
+		i=i+1
 
 
-print "start test setAllowStreamlist ----------------------"
-setAllowStreamlist("111111111");
+	print "start test setAllowStreamlist ----------------------"
+	setAllowStreamlist("111111111");

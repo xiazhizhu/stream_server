@@ -188,6 +188,19 @@ class RTSPServer extends events.EventEmitter {
 		
 	}
 	
+	
+	var get_result = function(callback) {
+    
+        client.keys("stg*", function (err, res) {
+            if (!err) {
+                callback(JSON.stringify(res));
+                console.log(str);
+            }else {
+                console.log(err);
+            }
+        });
+    
+	}
 	isLegalPathFromRedis(path){
 		return 1 ;
 		console.log("rtsp-server isLegalPathFromRedis");

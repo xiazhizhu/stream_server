@@ -140,9 +140,24 @@ class RTSPSession extends event.EventEmitter {
                     this.broadcastVideoControl(rtpBody);
                 }
                 this.inBytes += (rtpLen + 4);
-            } else { // rtsp method
-			    console.log("5555555 "+buf.readUInt8())
-                var reqBuf = Buffer.concat([buf], 1);
+            } 
+			
+			else 
+			{ // rtsp method
+		        var reqBuf = Buffer.concat([buf], 1);
+				if (this.bp.need(8)) {    //get the rtsp method whole name
+                    if (yield) return;
+                }
+				buf = this.bp.read(8);
+				reqBuf = Buffer.concat([reqBuf, buf], reqBuf.length + 8);
+				
+				if(this.isRstpMethodLega(reqBuf) != 1)
+				{
+					console.log("buff error :is not rtsp method ,return directly buf is "+reqBuf.goString());
+					if (yield) return;
+				}					
+			    
+              //  var reqBuf = Buffer.concat([buf], 1);
                 while (reqBuf.toString().indexOf("\r\n\r\n") < 0) {
 					console.log("444444");
                     if (this.bp.need(1)) {
@@ -155,7 +170,7 @@ class RTSPSession extends event.EventEmitter {
                 this.inBytes += reqBuf.length;
                 if (req['Content-Length']) {
                     var bodyLen = parseInt(req['Content-Length']);
-					console.log("555555");
+					console.log("666666");
                     if (this.bp.need(bodyLen)) {
                         if (yield) return;
                     }
@@ -190,9 +205,39 @@ class RTSPSession extends event.EventEmitter {
                 }
                 this.emit('request', req);
             }
+			
         }
 
     }
+	
+	isRstpMethodLega(reqBuf){
+		console.log("isRstpMethodLega reqbuf="+reqBuf.toString());
+		if(reqBuf.toString().indexOf("OPTIONS")>=0){
+			//console.log("isRstpMethodLega OPTIONS");
+			return 1;
+		}
+		else if(reqBuf.toString().indexOf("ANNOUNCE")>=0){
+			return 1;
+		}
+		else if(reqBuf.toString().indexOf("SETUP")>=0){
+			return 1;
+		}
+		else if(reqBuf.toString().indexOf("DESCRIBE")>=0){
+			return 1;
+		}
+		else if(reqBuf.toString().indexOf("PLAY")>=0){
+			return 1;
+		}
+		else if(reqBuf.toString().indexOf("RECORD")>=0){
+			return 1;
+		}
+		else if(reqBuf.toString().indexOf("TEARDOWN")>=0){
+			return 1;
+		}
+		else{
+			return 0;
+		}
+	}
 
     /**
      * 

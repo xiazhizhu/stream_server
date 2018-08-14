@@ -28,7 +28,7 @@ class BufferPool extends Readable {
   }
 
   push(buf) {
-	console.log("buffer-pool push");
+//	console.log("buffer-pool push");
     super.push(buf);
     this.poolBytes += buf.length;
     this.readBytes += buf.length;
@@ -38,13 +38,13 @@ class BufferPool extends Readable {
   }
 
   read(size) {
-	console.log("buffer-pool read "+size);
+//	console.log("buffer-pool read "+size);
     this.poolBytes -= size;
     return super.read(size);
   }
 
   need(size) {
-	console.log("buffer-pool need" + size);
+//	console.log("buffer-pool need" + size);
     let ret = this.poolBytes < size;
     if (ret) {
       this.needBytes = size;

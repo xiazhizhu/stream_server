@@ -1,12 +1,20 @@
-const file = require("./fileModule");
+const client = require('./redis_client');
 
+var str = "";
 
-file.writeLine("中文测试");
-file.writeLine("22222");
-file.writeLine("33333");
+var get_result = function(callback) {
+    
+        client.keys("stg*", function (err, res) {
+            if (!err) {
+                callback(JSON.stringify(res));
+                console.log(str);//@1 这里输出的是有值的str
+            }else {
+                console.log(err);
+            }
+        });
+    
+}
 
-/*
-file.readLine(function(err,val){
-	console.log(val);
-});
-*/
+get_result(function(data){
+    console.log(data)
+})
