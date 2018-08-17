@@ -1,42 +1,46 @@
 #!/usr/bin/env python
-#!-*-coding:utf-8-*-
+#-*-coding:utf-8-*-
 
-import threading
-import time
-import logging
-
+import threading, time, logging, json, urllib2
 from dealDb import gettimeoutstreamlist
 
+##TSP callback
+URL = "http://tomcat-microservices.stg02.internal.caritc.de:8080/nev-biz-proxy/services/remoteVideoCallback/closePush/"
+##定时时长(单位:秒)
+TIMESTEP=120
+##日志文件
+logging.basicConfig(level=logging.DEBUG, filename='/var/log/webServer.log', filemode='w', format='%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')  
 
-#从超时接口获取的list数据,进行封装处理
-def list_2_dict_package(result):
-	new_list = []
-	if len(result) != 0:
-		for index in range(len(result)):
-			new_dict = {}
-			new_dict["vinCode"] = result[index]
-			new_list.append(new_dict)
-	#server.logger.debug('new_list:%s', new_list)
-	return new_list
 
-# def print_output():
-	# print "##print_output##"
+def post_method_2_tps(text):
+	if(len(text) == 0):
+		logging.debug("timeout list is empty!!!")
+	else:
+		text = json.dumps(text)
+		logging.debug("%s", text)
+		header_dict = {"User-Agent":"Apache-HttpClient/4.1.1 (java 1.5)","Content-Type":"application/json","Accept-Encoding": "gzip,deflate"}
+		req = urllib2.Request(url=URL,data=text,headers=header_dict)
+		result = urllib2.urlopen(req)
+		result = result.read()
+		logging.debug("%s", result)
 
 def get_timeout_list():
-	print "***getTimeoutList***"
 	#调用获取超时接口
-	result = gettimeoutstreamlist()
-	#server.logger.debug('result:%s', result)
+	try:
+		result = gettimeoutstreamlist()
+	except:
+		logging.debug("gettimeoutstreamlist callback error")
 	list_num = len(result)
+	logging.debug("%s", list_num)
 	if list_num == 0:
 		result_list=[]
 	else:
-		result_list = list_2_dict_package(result)
-	#//yield print_output()
-	#//处理TSP相关部分
-	#//将结果发送给TSP
-	t = threading.Timer(3, get_timeout_list)
-	t.start()
+		result_list=result
+	logging.debug("%s", result_list)
+	#调用TSP callback接口
+	try:
+		post_method_2_tps(result_list)
+	except:
+		logging.debug("post_method_2_tps callback error")
+	threading.Timer(TIMESTEP, get_timeout_list).start()
 
-if __name__=="__main__":
-	get_timeout_list()

@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 #!/-*-coding:utf-8-*-
-import redis
+import redis ,logging
 
 redisKeyPrefix= 'stg02'   #redis前缀1
 redisKeyPrefixSub= 'rtsp'   #redis前缀2
 tempKeyTtl=120  # 推流路径有效时间 单位秒
+
+##日志文件
+logging.basicConfig(level=logging.DEBUG, filename='/var/log/webServer.log', filemode='w', format='%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s') 
 
 from rediscluster import StrictRedisCluster
 import sys
@@ -16,14 +19,16 @@ redis_nodes =  [{"host":"concar-redis01","port":"6379"},
 
 #r = redis.Redis(host=redis_host, port=redis_port,password=redis_password)
 r = StrictRedisCluster(startup_nodes=redis_nodes)
-print "redis r=",r
+# print "redis r=",r
+logging.debug("redis %s", r)
 
 def list_iter(servername):
 	#return r.hmget("EasyDarwin:4b577dd1c1794628a6ac1378396387da","IP", "Load")
 	dirc={}
         for t in servername:
 		m=r.hmget(t,"IP","Load") 
-		print "m=",m
+		# print "m=",m
+		logging.debug("m= %s", m)
         	dirc[m[0]]=int(m[1])
 	return dirc 
 
@@ -31,25 +36,33 @@ def list_iter(servername):
 def getAddress(vinCode,isExist=0):
 	keyinfo= redisKeyPrefix+"_"+redisKeyPrefixSub+"_"+"Live:*"+vinCode+"*"
 	stream=r.keys(keyinfo)
-	print "stream",stream,"and vincode is",vinCode
+	# print "stream",stream,"and vincode is",vinCode
+	logging.debug("stream= %s, and vincode is %s", stream, vinCode)
 	if len(stream):
 		#the stream is existed
-		print "stream has been exist",stream
+		# print "stream has been exist",stream
+		logging.debug("stream has been exist %s", stream)
 		isExist=1
 		darwinInfo=r.hmget(stream[0],"EasyDarwin")
-		print "darwinInfo",darwinInfo
+		# print "darwinInfo",darwinInfo
+		logging.debug("darwinInfo %s", darwinInfo)
 		listDarwin=r.keys(darwinInfo[0]);
-		print "listDarwin",listDarwin
+		# print "listDarwin",listDarwin
+		logging.debug("listDarwin %s", listDarwin)
 		darwinIp=r.hmget(listDarwin[0],"IP")
-		print "darwinIp",darwinIp
+		# print "darwinIp",darwinIp
+		logging.debug("darwinIp %s", darwinIp)
 		len_prefix= len(redisKeyPrefix)+len(redisKeyPrefixSub)+2+len("Live:")
 		return isExist, darwinIp[0],stream[0][len_prefix:]
 	listDarwin=r.keys(redisKeyPrefix+"_"+redisKeyPrefixSub+"_"+"EasyDarwin:*")
-	print "list",listDarwin
+	# print "list",listDarwin
+	logging.debug("list %s", listDarwin)
 	ipstr = list_iter(listDarwin) 
-	print "ip=",ipstr
+	# print "ip=",ipstr
+	logging.debug("ip= %s", ipstr)
 	f = zip(ipstr.values(),ipstr.keys())
-	print "before sort=",f
+	# print "before sort=",f
+	logging.debug("before sort= %s", f)
 	afterSF=sorted(f)
 	print "after sort=",afterSF
 	if len(afterSF)==0:
@@ -60,10 +73,12 @@ def getAddress(vinCode,isExist=0):
 def gettimeoutstreamlist():
 	len_prefix= len(redisKeyPrefix)+len(redisKeyPrefixSub)+2+len("Live:")
 	allStream=r.keys(redisKeyPrefix+"_"+redisKeyPrefixSub+"_"+"Live:*")
-	print "allStream=",allStream
+	# print "allStream=",allStream
+	logging.debug("allStream= %s", allStream)
 	result =[]
 	if len(allStream) == 0:
-		print "have none stream"
+		# print "have none stream"
+		logging.debug("have none stream")
 		return allStream
 	for stream in allStream:
 		out=r.hmget(stream,"Output","EasyDarwin")
