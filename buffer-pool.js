@@ -11,7 +11,7 @@ class BufferPool extends Readable {
   }
 
   init() {
-	console.log("buffer-pool init");
+    //console.log("buffer-pool init");
     this.readBytes = 0;
     this.poolBytes = 0;
     this.needBytes = 0;

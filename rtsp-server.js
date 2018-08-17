@@ -11,7 +11,7 @@ const file = require("./fileModule");
 class RTSPServer extends events.EventEmitter {
     
     constructor(port = 554) {
-		console.log("rtsp-server constructor");
+	console.log("rtsp-server constructor");
         super();
 		
 		//-- redis info 
@@ -94,12 +94,12 @@ class RTSPServer extends events.EventEmitter {
     }
 
     addSession(session) {
-		console.log("rtsp-server addSession");
+	console.log("rtsp-server addSession");
         if(session.type == 'pusher') {
-			console.log("111111addSession pusher session.path",session.path);
+			console.log("addSession pusher session.path",session.path);
             this.pushSessions[session.path] = session;
         } else if(session.type == 'player') {
-			console.log("111111addSession player session.path",session.path);
+			console.log("addSession player session.path",session.path);
             var playSessions = this.playSessions[session.path];
             if(!playSessions) {
                 playSessions = [];
@@ -113,7 +113,7 @@ class RTSPServer extends events.EventEmitter {
 
     removeSession(session) {
 		console.log("rtsp-server removersession");
-		console.log("111111removeSession "+session.type+ " session path:" + session.path);
+		console.log("removeSession "+session.type+ " session path:" + session.path);
         if(session.type == 'pusher') {			
             delete this.pushSessions[session.path];
         } else if(session.type == 'player') {
@@ -133,7 +133,7 @@ class RTSPServer extends events.EventEmitter {
 	//	console.log("111111addSessionToredis  path:",path);
 		var sessionKey= cfg.redis_key_prefix+'_'+cfg.redis_key_prefix_sub+'_'+"Live:"+path;
 		if(session.type == 'pusher') {
-			console.log("111111addSessionToredis pusher sessionKey:",sessionKey);            
+			console.log("addSessionToredis pusher sessionKey:",sessionKey);            
 			var sessionInfo={};
 			sessionInfo.Bitrate= 0;
 			sessionInfo.Output = 0;
@@ -143,7 +143,7 @@ class RTSPServer extends events.EventEmitter {
 			//add a data to local file
 			file.writeLine(sessionKey);
         } else if(session.type == 'player') {
-			console.log("111111addSessionToredis player sessionKey:",sessionKey);
+			console.log("addSessionToredis player sessionKey:",sessionKey);
             client.hincrby(sessionKey,'Output',1);
         }	
 	}
@@ -189,18 +189,6 @@ class RTSPServer extends events.EventEmitter {
 	}
 	
 	
-	var get_result = function(callback) {
-    
-        client.keys("stg*", function (err, res) {
-            if (!err) {
-                callback(JSON.stringify(res));
-                console.log(str);
-            }else {
-                console.log(err);
-            }
-        });
-    
-	}
 	isLegalPathFromRedis(path){
 		return 1 ;
 		console.log("rtsp-server isLegalPathFromRedis");
@@ -230,12 +218,12 @@ class RTSPServer extends events.EventEmitter {
 	
 }
 function replyFunc(error,reply){
-	console.log("rtsp-server replyFunc");
+	//console.log("rtsp-server replyFunc");
 	if(error){
 		console.log(error);
 	}
 	else{
-		console.log(JSON.stringify(reply));
+	//	console.log(JSON.stringify(reply));
 	}
 }
 
