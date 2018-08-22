@@ -82,12 +82,15 @@ def gettimeoutstreamlist():
 		return allStream
 	for stream in allStream:
 		out=r.hmget(stream,"Output","EasyDarwin")
-		print "out=",out[0]
+		# print "out=",out[0]
+		logging.debug("out= %s", out[0])
 		if int(out[0]) == 0:
-			print "out is 0"
+			# print "out is 0"
+			logging.debug("out is 0")
 			resultinfo={}
 			listDarwin=r.keys(out[1]);
-			print "listDarwin",listDarwin
+			# print "listDarwin",listDarwin
+			logging.debug("listDarwin %s", listDarwin)
 			darwinIp=r.hmget(listDarwin[0],"IP","RTSP")
 			if len(darwinIp)==0:
 				resultinfo["host"]="";
@@ -99,7 +102,8 @@ def gettimeoutstreamlist():
 			resultinfo["liveType"]=0			
 			resultinfo["stream"]=stream[len_prefix:]
 			#result.append(stream[len_prefix:len_prefix+17])
-			print "resultinfo="+str(resultinfo)
+			# print "resultinfo="+str(resultinfo)
+			logging.debug("resultinfo= %s", str(resultinfo))
 			result.append(resultinfo)
 		
 	return result	
@@ -112,19 +116,19 @@ def setAllowStreamlist(stream):
 
 
 	
-if(__name__=="__main__"):
-	print "start test getAddress!"
-	isExist=0
-	result=getAddress("0000",isExist)
-	print "address=",result[1],"isExist =",result[0],"stream=",result[2]
+# if(__name__=="__main__"):
+	# print "start test getAddress!"
+	# isExist=0
+	# result=getAddress("0000",isExist)
+	# print "address=",result[1],"isExist =",result[0],"stream=",result[2]
 
-	print "start gettimeoutstreamlist--------------------------"
-	list=gettimeoutstreamlist()
-	i=0
-	while i < len(list):
-		print "LIST IS "+str(list[i])
-		i=i+1
+	# print "start gettimeoutstreamlist--------------------------"
+	# list=gettimeoutstreamlist()
+	# i=0
+	# while i < len(list):
+		# print "LIST IS "+str(list[i])
+		# i=i+1
 
 
-	print "start test setAllowStreamlist ----------------------"
-	setAllowStreamlist("111111111");
+	# print "start test setAllowStreamlist ----------------------"
+	# setAllowStreamlist("111111111");

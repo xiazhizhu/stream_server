@@ -61,7 +61,7 @@ class HTTPServer extends events.EventEmitter {
                     fs.removeSync(_file.path);
                 }
             }
-            console.log(e);
+            console.log(Date() + e);
             if(res.headersSent) {
                 return next();
             }
@@ -86,11 +86,11 @@ class HTTPServer extends events.EventEmitter {
 
     async start() {
 		
-		console.log("http-server start");
+		console.log("%s  http-server start", Date());
         this.server.listen(this.port, async () => {
             var host = await ip.v4();
             var env = process.env.NODE_ENV || "development";
-            console.log(`EasyDarwin http server listening on http://${host}:${this.port} in ${env} mode`);
+            console.log(`%s  EasyDarwin http server listening on http://${host}:${this.port} in ${env} mode`, Date());
         })
     }
 }

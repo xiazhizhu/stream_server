@@ -11,7 +11,7 @@ const file = require("./fileModule");
 class RTSPServer extends events.EventEmitter {
     
     constructor(port = 554) {
-	console.log("rtsp-server constructor");
+	console.log("%s  rtsp-server constructor", Date);
         super();
 		
 		//-- redis info 
@@ -59,17 +59,17 @@ class RTSPServer extends events.EventEmitter {
         }).on("listening", async () => {
             var host = await ip.v4();
             var env = process.env.NODE_ENV || "development";
-            console.log(`EasyDarwin rtsp server listening on rtsp://${host}:${this.port} in ${env} mode`);
+            console.log(`%s  EasyDarwin rtsp server listening on rtsp://${host}:${this.port} in ${env} mode`, Date());
         })
     }
 
     start() {
 				
 		//=====register easydarwin to redis
-		console.log("rtsp-server start");
+		console.log("%s  rtsp-server start", Date());
 		const uuidV1 = require('uuid/v1');
 		var uuid = uuidV1();
-		console.log("uudi="+uuid); 
+		console.log("%s  uudi="+uuid, Date()); 
 		this.easyDarwinKey = cfg.redis_key_prefix+'_'+cfg.redis_key_prefix_sub+'_'+"EasyDarwin:"+uuid;
 		cfg.easyDarwinKey = this.easyDarwinKey ;
 		//send redis heartbeat to redis
@@ -94,12 +94,12 @@ class RTSPServer extends events.EventEmitter {
     }
 
     addSession(session) {
-	console.log("rtsp-server addSession");
+	console.log("%s  rtsp-server addSession", Date());
         if(session.type == 'pusher') {
-			console.log("addSession pusher session.path",session.path);
+			console.log("%s  addSession pusher session.path " + session.path, Date());
             this.pushSessions[session.path] = session;
         } else if(session.type == 'player') {
-			console.log("addSession player session.path",session.path);
+			console.log("%s  addSession player session.path" + session.path, Date());
             var playSessions = this.playSessions[session.path];
             if(!playSessions) {
                 playSessions = [];
@@ -112,8 +112,8 @@ class RTSPServer extends events.EventEmitter {
     }
 
     removeSession(session) {
-		console.log("rtsp-server removersession");
-		console.log("removeSession "+session.type+ " session path:" + session.path);
+		console.log("%s  rtsp-server removersession", Date());
+		console.log("%s  removeSession "+session.type+ " session path:" + session.path, Date());
         if(session.type == 'pusher') {			
             delete this.pushSessions[session.path];
         } else if(session.type == 'player') {
@@ -128,12 +128,12 @@ class RTSPServer extends events.EventEmitter {
     }
 	
 	addSessionToredis(session){
-		console.log("rtsp-server addSessionToredis");
+		console.log("%s  rtsp-server addSessionToredis", Date());
 		var path=session.path.substring(1);
 	//	console.log("111111addSessionToredis  path:",path);
 		var sessionKey= cfg.redis_key_prefix+'_'+cfg.redis_key_prefix_sub+'_'+"Live:"+path;
 		if(session.type == 'pusher') {
-			console.log("addSessionToredis pusher sessionKey:",sessionKey);            
+			console.log("%s  addSessionToredis pusher sessionKey: " + sessionKey, Date());            
 			var sessionInfo={};
 			sessionInfo.Bitrate= 0;
 			sessionInfo.Output = 0;
@@ -143,30 +143,30 @@ class RTSPServer extends events.EventEmitter {
 			//add a data to local file
 			file.writeLine(sessionKey);
         } else if(session.type == 'player') {
-			console.log("addSessionToredis player sessionKey:",sessionKey);
+			console.log("%s  addSessionToredis player sessionKey: " + sessionKey, Date());
             client.hincrby(sessionKey,'Output',1);
         }	
 	}
 	
 	removeSessionToredis(session){
-		console.log("rtsp-server removeSessionToredis");
+		console.log("%s  rtsp-server removeSessionToredis", Date());
 		var path=session.path.substring(1);
 		var sessionKey= cfg.redis_key_prefix+'_'+cfg.redis_key_prefix_sub+'_'+"Live:"+path;
 		if(session.type == 'pusher') {
-			console.log("removeSessionToredis pusher sessionKey",sessionKey);            
+			console.log("%s  removeSessionToredis pusher sessionKey " + sessionKey, Date());            
 			var sessionInfo={};
 			sessionInfo.Bitrate= 0;
 			sessionInfo.Output = 0;
 			sessionInfo.EasyDarwin = cfg.easyDarwinKey;
 			client.del(sessionKey);
         } else if(session.type == 'player') {
-			console.log("removeSessionToredis player sessionKey",sessionKey);
+			console.log("%s  removeSessionToredis player sessionKey" + sessionKey, Date());
 			client.hexists(sessionKey,"Output",function(err,val){
 			if(val){
 				client.hincrby(sessionKey,'Output',-1);
 			}
 			else{				
-				console.log("the sessionKey is deleted")
+				console.log("%s  the sessionKey is deleted", Date())
 			}
 					
 			});
@@ -177,7 +177,7 @@ class RTSPServer extends events.EventEmitter {
 	
 	registerDarwininfoRedis(darwinKey){
 		
-		console.log("rtsp-server registerDarwininfoRedis");
+		console.log("%s  rtsp-server registerDarwininfoRedis", Date());
 		var darwinInfo = {};
 		darwinInfo.IP = cfg.darwinWanip;
 		darwinInfo.HTTP = cfg.http_port ;
@@ -191,25 +191,25 @@ class RTSPServer extends events.EventEmitter {
 	
 	isLegalPathFromRedis(path){
 		return 1 ;
-		console.log("rtsp-server isLegalPathFromRedis");
+		console.log("%s  rtsp-server isLegalPathFromRedis", Date());
 		if (path.length == 0){
 			return 0;
 		}
 		var streamKey = cfg.redis_key_prefix+'_'+cfg.redis_key_prefix_sub+'_'+"Temp:"+path.substring(1);
-		console.log("isLegalPathFromRedis streamKey="+streamKey);
+		console.log("%s  isLegalPathFromRedis streamKey="+streamKey, Date());
 		var value = client.get(streamKey);
-		console.log("isLegalPathFromRedis value"+value)
+		console.log("%s  isLegalPathFromRedis value"+value, Date())
 			
 	}
 	
 	delUnuseDataRedis(){
-		console.log("delUnuseDataRedis start");
+		console.log("%s  delUnuseDataRedis start", Date());
 		file.readLine(function(err,val){
 			if(err){
 				
 			}
 			else{
-				console.log("delUnuseDataRedis del from redis key="+val);
+				console.log("%s  delUnuseDataRedis del from redis key="+val, Date());
 				client.del(val);
 			}			
 		});
@@ -220,7 +220,7 @@ class RTSPServer extends events.EventEmitter {
 function replyFunc(error,reply){
 	//console.log("rtsp-server replyFunc");
 	if(error){
-		console.log(error);
+		console.log(Date() + error);
 	}
 	else{
 	//	console.log(JSON.stringify(reply));
@@ -228,7 +228,7 @@ function replyFunc(error,reply){
 }
 
 function updateDarwinTimeout(){
-	console.log("rtsp-server updateDarwinTimeout");
+	console.log("%s  rtsp-server updateDarwinTimeout", Date());
 	
 	var darwinInfo = {};
 	darwinInfo.IP = cfg.darwinWanip;

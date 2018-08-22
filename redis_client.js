@@ -32,10 +32,10 @@ const redisObj = {
 	]);
 	
 	this.client.on("error",function(err){
-		console.log("redisCache Error " + err);
+		console.log("%s  redisCache Error " + err, Date());
 	});
 	this.client.on("ready", function(){
-		console.log("redisCache connection succeed");
+		console.log("%s  redisCache connection succeed", Date());
 	});
 	},
 	init:function(){
@@ -76,7 +76,7 @@ const redisObj = {
 		instance.hgetall = function(key, callback){
 			hgetall.call(instance, key,function(err,val){
 				if(err){
-					console.log("redis.hgetall ",key,err);
+					console.log("%s  redis.hgetall " + key + " " + err, Date());
 				}
 				callback(null, val);
 			});
@@ -112,7 +112,7 @@ const redisObj = {
 		instance.ttl = function(key, callback){
 			ttl.call(instance, key, function(err,val){
 				if(err){
-					console.log("redis.ttl ", key, err);
+					console.log("%s  redis.ttl " + key + " " + err, Date());
 				}
 				callback(null, val);
 			});
@@ -121,7 +121,7 @@ const redisObj = {
 		instance.quit = function(){
 			quit.call(instance,function(err,val){
 				if(err){
-					console.log("redis.quit ", err);
+					console.log("%s  redis.quit " + err, Date());
 				}
 			});
 		};

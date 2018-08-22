@@ -7,7 +7,7 @@ class EasyRtpParser {
     static parseRtpPacket(buf) {
 		
 		
-		console.log("rtp-parse parseRtpPacket");
+		console.log("%s  rtp-parse parseRtpPacket", Date());
         if(buf.length < EasyRtpParser.FIXED_HEADER_LENGTH) {
             throw new Error('can not parse buffer smaller than fixed header');
         }
@@ -29,7 +29,7 @@ class EasyRtpParser {
         if(end - offset >= 4 * csrcCount) {
             offset += 4 * csrcCount;
         } else {
-            console.log(`no enough space for csrc`);
+            console.log(`%s  no enough space for csrc`, Date());
         }
         if(extension) {
             if(end - offset >= 4) {
@@ -38,10 +38,10 @@ class EasyRtpParser {
                 if(end - offset >= extLen) {
                     offset += extLen;
                 } else {
-                    console.log(`no enough space for extension data`);
+                    console.log(`%s  no enough space for extension data`, Date());
                 }
             } else {
-                console.log(`no enough space for extension header`);
+                console.log(`%s  no enough space for extension header`, Date());
             }
         }
         if(padding) {
@@ -68,7 +68,7 @@ class EasyRtpParser {
     }
 
     static parseRtpPayloadType(payloadType) {
-		console.log("rtp-parse parseRtpPayloadType");
+		console.log("%s  rtp-parse parseRtpPayloadType", Date());
         if (payloadType < 0 || payloadType > 127) {
             throw new Error('payload type range error');
         }
@@ -77,7 +77,7 @@ class EasyRtpParser {
     }
 
     static isKeyframeStart(rtpRawdata) {
-		console.log("rtp-parse isKeyframeStart");
+		console.log("%s  rtp-parse isKeyframeStart", Date());
         // fu-a
         if(rtpRawdata.length >= 2 && rtpRawdata.readUInt8(0) == 0x7c && (rtpRawdata.readUInt8(1) == 0x87 || rtpRawdata.readUInt8(1) == 0x85)) { // fu-a
             return true;

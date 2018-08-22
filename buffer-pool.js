@@ -19,7 +19,7 @@ class BufferPool extends Readable {
   }
 
   stop() {
-	console.log("buffer-pool stop");
+	console.log("%s  buffer-pool stop", Date());
     try {
       this.gFun.next(true);
     } catch (e) {

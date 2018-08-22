@@ -22,7 +22,7 @@ class RTSPRequest {
 class RTSPSession extends event.EventEmitter {
 
     constructor(socket, server) {
-	console.log("rtsp-session constructor");
+	console.log("%s  rtsp-session constructor", Date());
         super();
         this.type = '';
         this.url = '';
@@ -102,7 +102,7 @@ class RTSPSession extends event.EventEmitter {
     }
 
     * genHandleData() {
-	console.log("rtsp-session genHandleData");
+	console.log("%s  rtsp-session genHandleData", Date());
         while (true) {
 			//console.log("111111");
             if (this.bp.need(1)) {
@@ -153,7 +153,7 @@ class RTSPSession extends event.EventEmitter {
 				
 				if(this.isRstpMethodLega(reqBuf) != 1)
 				{
-					console.log("buff error :is not rtsp method ,return directly buf is "+reqBuf.toString());
+					console.log("%s  buff error :is not rtsp method ,return directly buf is "+reqBuf.toString(), Date());
 					if (yield) return;
 				}					
 			    
@@ -211,7 +211,7 @@ class RTSPSession extends event.EventEmitter {
     }
 	
 	isRstpMethodLega(reqBuf){
-		console.log("isRstpMethodLega reqbuf="+reqBuf.toString());
+		console.log("%s  isRstpMethodLega reqbuf="+reqBuf.toString(), Date());
 		if(reqBuf.toString().indexOf("OPTIONS")>=0){
 			//console.log("isRstpMethodLega OPTIONS");
 			return 1;
@@ -250,7 +250,7 @@ class RTSPSession extends event.EventEmitter {
      * @param {Object} [opt.headers={}]
      */
     makeResponseAndSend(opt = {}) {
-	console.log("rtsp-session makeResponseAndSend");
+	console.log("%s  rtsp-session makeResponseAndSend", Date());
         var def = { code: 200, msg: 'OK', headers: {} };
         var opt = Object.assign({}, def, opt);
         var raw = `RTSP/1.0 ${opt.code} ${opt.msg}\r\n`;
@@ -258,8 +258,8 @@ class RTSPSession extends event.EventEmitter {
             raw += `${key}: ${opt.headers[key]}\r\n`;
         }
         raw += `\r\n`;
-        console.log(`>>>>>>>>>>>>> response[${opt.method}] >>>>>>>>>>>>>`);
-        console.log(raw);
+        console.log(`%s  >>>>>>>>>>>>> response[${opt.method}] >>>>>>>>>>>>>`, Date());
+        console.log(Date() + raw);
         this.socket.write(raw);
         this.outBytes += raw.length;
         if (opt.body) {
@@ -271,7 +271,7 @@ class RTSPSession extends event.EventEmitter {
     }
 
     parseRequestHeader(header = '') {
-		console.log("rtsp-session parseRequestHeader");
+		console.log("%s  rtsp-session parseRequestHeader", Date());
         var ret = new RTSPRequest();
         ret.raw = header;
         var lines = header.trim().split("\r\n");
@@ -295,9 +295,9 @@ class RTSPSession extends event.EventEmitter {
      * @param {RTSPRequest} req 
      */
     async handleRequest(req) {
-	console.log("rtsp-session handleRequest");
-        console.log(`<<<<<<<<<<< request[${req.method}] <<<<<<<<<<<<<`);
-        console.log(req.raw);
+	console.log("%s  rtsp-session handleRequest", Date());
+        console.log(`%s  <<<<<<<<<<< request[${req.method}] <<<<<<<<<<<<<`, Date());
+        console.log(Date() + req.raw);
         var res = {
             method: req.method,
             headers: {
@@ -318,11 +318,11 @@ class RTSPSession extends event.EventEmitter {
                     res.code = 406;
                     res.msg = 'Not Acceptable';
                 } else {
-				console.log("handleRequest pushSession path="+this.path);
+				console.log("%s  handleRequest pushSession path="+this.path, Date());
 					if (this.server.isLegalPathFromRedis(this.path)==0){
 						res.code = 405;
 						res.msg = 'Path Illegal';
-						console.log("code="+res.code+";res.msg"+res.msg);
+						console.log("%s  code="+res.code+";res.msg"+res.msg, Date());
 					}else{
 						this.server.addSession(this);
 						this.server.addSessionToredis(this);
@@ -362,7 +362,7 @@ class RTSPSession extends event.EventEmitter {
                                 this.inBytes += buf.length;
                                 this.broadcastAudio(buf);
                             }).on('error', err => {
-                                console.log(err);
+                                console.log(Date() + err);
                             })
                             await this.bindUDPPort(this.aRTPServerSocket, this.aRTPServerPort);
                             this.aRTPControlServerPort = await getPort();
@@ -371,7 +371,7 @@ class RTSPSession extends event.EventEmitter {
                                 this.inBytes += buf.length;
                                 this.broadcastAudioControl(buf);
                             }).on('error', err => {
-                                console.log(err);
+                                console.log(Date() + err);
                             })
                             await this.bindUDPPort(this.aRTPControlServerSocket, this.aRTPControlServerPort);
                             ts = ts.split(';');
@@ -401,7 +401,7 @@ class RTSPSession extends event.EventEmitter {
                                     this.gopCache.push(buf);
                                 }
                             }).on('error', err => {
-                                console.log(err);
+                                console.log(Date() + err);
                             })
                             await this.bindUDPPort(this.vRTPServerSocket, this.vRTPServerPort);
                             this.vRTPControlServerPort = await getPort();
@@ -473,7 +473,7 @@ class RTSPSession extends event.EventEmitter {
     }
 
     stop() {
-	 console.log("rtsp-session stop");
+	 console.log("%s  rtsp-session stop", Date());
         this.bp.stop();
         this.server.removeSession(this);
 		this.server.removeSessionToredis(this);
@@ -488,11 +488,11 @@ class RTSPSession extends event.EventEmitter {
         this.vRTPServerSocket && this.vRTPServerSocket.close();
         this.vRTPControlserverSokcet && this.vRTPControlserverSokcet.close();
 
-        console.log(`rtsp session[type=${this.type}, path=${this.path}, sid=${this.sid}] end`);
+        console.log(`%s  rtsp session[type=${this.type}, path=${this.path}, sid=${this.sid}] end`, Date());
     }
 
     sendGOPCache() {
-		console.log("rtsp-session sendGOPCache");
+		console.log("%s  rtsp-session sendGOPCache", Date());
         return new Promise(async (resolve, reject) => {
             if (!this.pushSession) {
                 resolve();
@@ -521,7 +521,7 @@ class RTSPSession extends event.EventEmitter {
     }
 
     async sendVideo(rtpBuf) {
-	console.log("rtsp-session sendVideo");
+	console.log("%s  rtsp-session sendVideo", Date());
         if (this.transType == 'tcp') {
             var len = rtpBuf.length + 4;
             var headerBuf = Buffer.allocUnsafe(4);
@@ -539,7 +539,7 @@ class RTSPSession extends event.EventEmitter {
     }
 
     sendVideoControl(rtpBuf) {
-		console.log("rtsp-session sendVideoControl");
+		console.log("%s  rtsp-session sendVideoControl", Date());
         if (this.transType == 'tcp') {
             var len = rtpBuf.length + 4;
             var headerBuf = Buffer.allocUnsafe(4);
@@ -557,7 +557,7 @@ class RTSPSession extends event.EventEmitter {
     }
 
     sendAudio(rtpBuf) {
-	console.log("rtsp-session sendAudio");
+	console.log("%s  rtsp-session sendAudio", Date());
         if (this.transType == 'tcp') {
             var len = rtpBuf.length + 4;
             var headerBuf = Buffer.allocUnsafe(4);
@@ -575,7 +575,7 @@ class RTSPSession extends event.EventEmitter {
     }
 
     sendAudioControl(rtpBuf) {
-		console.log("rtsp-session sendAudioControl");
+		console.log("%s  rtsp-session sendAudioControl", Date());
         if (this.transType == 'tcp') {
             var len = rtpBuf.length + 4;
             var headerBuf = Buffer.allocUnsafe(4);
@@ -593,7 +593,7 @@ class RTSPSession extends event.EventEmitter {
     }
 
     broadcastVideo(rtpBuf) {
-	console.log("rtsp-session broadcastVideo");
+	console.log("%s  rtsp-session broadcastVideo", Date());
         var playSessions = this.server.playSessions[this.path] || [];
         for (var playSession of playSessions) {
             playSession.sendVideo(rtpBuf);
@@ -601,7 +601,7 @@ class RTSPSession extends event.EventEmitter {
     }
 
     broadcastVideoControl(rtpBuf) {
-	console.log("rtsp-session broadcastVideoControl");
+	console.log("%s  rtsp-session broadcastVideoControl", Date());
         var playSessions = this.server.playSessions[this.path] || [];
         for (var playSession of playSessions) {
             playSession.sendVideoControl(rtpBuf);
@@ -609,7 +609,7 @@ class RTSPSession extends event.EventEmitter {
     }
 
     broadcastAudio(rtpBuf) {
-	console.log("rtsp-session broadcastAudio");
+	console.log("%s  rtsp-session broadcastAudio", Date());
         var playSessions = this.server.playSessions[this.path] || [];
         for (var playSession of playSessions) {
             playSession.sendAudio(rtpBuf);
@@ -617,7 +617,7 @@ class RTSPSession extends event.EventEmitter {
     }
 
     broadcastAudioControl(rtpBuf) {
-	console.log("rtsp-session broadcastAudioControl");
+	console.log("%s  rtsp-session broadcastAudioControl", Date());
         var playSessions = this.server.playSessions[this.path] || [];
         for (var playSession of playSessions) {
             playSession.sendAudioControl(rtpBuf);
@@ -625,7 +625,7 @@ class RTSPSession extends event.EventEmitter {
     }
 
     sleep(timeout = 1000) {
-	console.log("rtsp-session sleep");
+	console.log("%s  rtsp-session sleep", Date());
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 resolve();
@@ -634,12 +634,12 @@ class RTSPSession extends event.EventEmitter {
     }
 
     getUDPType() {
-	console.log("rtsp-session getUDPType");
+	console.log("%s  rtsp-session getUDPType", Date());
         return this.socket.address().family == 'IPv6' ? 'udp6' : 'udp4';
     }
 
     sendUDPPack(buf, socket, port, host) {
-	console.log("rtsp-session sendUDPPack");
+	console.log("%s  rtsp-session sendUDPPack", Date());
         return new Promise((resolve, reject) => {
             socket.send(buf, port, host, (err, len) => {
                 resolve();
@@ -648,7 +648,7 @@ class RTSPSession extends event.EventEmitter {
     }
 
     bindUDPPort(socket, port) {
-	console.log("rtsp-session bindUDPPort");
+	console.log("%s  rtsp-session bindUDPPort", Date());
         return new Promise((resolve, reject) => {
             socket.bind(port, () => {
                 // console.log(`UDP socket bind on ${port} done.`);
